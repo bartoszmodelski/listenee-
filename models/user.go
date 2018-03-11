@@ -4,12 +4,9 @@ import "github.com/jinzhu/gorm"
 
 type User struct {
 	gorm.Model
-	Name   string `gorm:"unique"`
-	Cookie string
+	Name string `gorm:"unique"`
 }
 
-type Product struct {
-	gorm.Model
-	Code  string
-	Price uint
+func findOrCreate(name string) *User {
+	db.First(&product, "code = ?", "L1212") // find product with code l1212
 }
