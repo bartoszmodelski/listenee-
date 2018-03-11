@@ -4,6 +4,7 @@ import (
 	"github.com/kataras/iris/context"
 	"github.com/kataras/iris/mvc"
 	"gowork/helpers"
+	"gowork/models"
 )
 
 type MyController struct {
@@ -26,6 +27,7 @@ func (m *MyController) Get(ctx context.Context) string {
 
 func (m *MyController) GetLogin(ctx context.Context, email string) string {
 	m.Session.LogIn(ctx, email)
+	model.UserFirstOrCreate(email)
 	return m.Get(ctx)
 }
 

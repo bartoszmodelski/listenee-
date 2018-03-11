@@ -1,12 +1,18 @@
 package model
 
-import "github.com/jinzhu/gorm"
+import (
+	"github.com/jinzhu/gorm"
+	"gowork/db"
+)
 
 type User struct {
 	gorm.Model
-	Name string `gorm:"unique"`
+	Email string `gorm:"unique"`
 }
 
-func findOrCreate(name string) *User {
-	db.First(&product, "code = ?", "L1212") // find product with code l1212
+func UserFirstOrCreate(email string) {
+	db := database.GetInstance().DB
+
+	var user User
+	db.FirstOrCreate(&user, &User{Email: email})
 }
