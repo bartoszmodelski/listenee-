@@ -29,7 +29,7 @@ func main() {
 	app := iris.New()
 
 	iris.RegisterOnInterrupt(func() {
-		fmt.Println("~~~ attemping graceful shutdown")
+		fmt.Println("\nAttemping graceful shutdown")
 		defer connection.Close()
 		timeout := 5 * time.Second
 		ctx, cancel := stdContext.WithTimeout(stdContext.Background(), timeout)
@@ -38,13 +38,29 @@ func main() {
 		app.Shutdown(ctx)
 	})
 
+	registerGateController(app, sessionManager)
+	registerGateView(app)
+
+	app.StaticWeb("/", "./public")
+
 	app.Logger().SetLevel("debug")
 	app.Use(recover.New())
 	app.Use(logger.New())
 
+	app.Run(iris.Addr(":8080"), iris.WithoutInterruptHandler)
+}
+
+func registerGateController(app *iris.Application, sessionManager *helper.SessionManager) {
 	gate := mvc.New(app.Party("/"))
 	gate.Register(sessionManager)
-	gate.Handle(new(controller.MyController))
+	gate.Handle(new(controller.GateController))
+}
 
-	app.Run(iris.Addr(":8080"), iris.WithoutInterruptHandler)
+func registerGateView(app *iris.Application) {
+	tmpl := iris.HTML("./views", ".html")
+	tmpl.Reload(true) // reload templates on each request (development mode)
+	tmpl.AddFunc("greet", func(s string) string {
+		return "Greetings " + s + "!"
+	})
+	app.RegisterView(tmpl)
 }

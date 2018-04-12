@@ -7,31 +7,34 @@ import (
 	"gowork/models"
 )
 
-type MyController struct {
+type GateController struct {
 	Session *helper.SessionManager
 }
 
-func (m *MyController) BeforeActivation(b mvc.BeforeActivation) {
+func (m *GateController) BeforeActivation(b mvc.BeforeActivation) {
 	b.Handle("GET", "/login/{email:string}", "GetLogin")
 	b.Handle("GET", "/secret", "GetSecret", m.AuthenticationGate)
 }
 
 // GET: http://localhost:8080/
-func (m *MyController) Get(ctx context.Context) string {
+func (m *GateController) Get(ctx context.Context) string {
 	if m.Session.IsLoggedIn(ctx) {
-		return "logged in, email: " + m.Session.GetEmail(ctx)
+		ctx.ViewData("Title", "Hi Page")
+		ctx.ViewData("Name", m.Session.GetEmail(ctx))
+		ctx.View("hi.html")
+		return ""
 	} else {
 		return "please login"
 	}
 }
 
-func (m *MyController) GetLogin(ctx context.Context, email string) string {
+func (m *GateController) GetLogin(ctx context.Context, email string) string {
 	m.Session.LogIn(ctx, email)
 	model.UserFirstOrCreate(email)
 	return m.Get(ctx)
 }
 
-func (m *MyController) AuthenticationGate(ctx context.Context) {
+func (m *GateController) AuthenticationGate(ctx context.Context) {
 	if m.Session.IsLoggedIn(ctx) {
 		ctx.Next()
 	} else {
@@ -39,11 +42,11 @@ func (m *MyController) AuthenticationGate(ctx context.Context) {
 	}
 }
 
-func (m *MyController) GetLogout(ctx context.Context) string {
+func (m *GateController) GetLogout(ctx context.Context) string {
 	m.Session.LogOut(ctx)
 	return "logged out"
 }
 
-func (m *MyController) GetSecret(ctx context.Context) string {
+func (m *GateController) GetSecret(ctx context.Context) string {
 	return "some secret"
 }
